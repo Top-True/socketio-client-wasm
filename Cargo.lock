@@ -806,6 +806,7 @@ dependencies = [
 name = "js-raw"
 version = "0.0.0"
 dependencies = [
+ "gloo",
  "js-sys",
  "reqwest",
 ]
