@@ -1,12 +1,14 @@
+pub use gloo; // todo
 pub use js_sys::Array as JsArray;
+pub use js_sys::Error as JsError;
 pub use js_sys::Function as JsFunction;
 pub use js_sys::Number as JsNumber;
 pub use js_sys::Object as JsObject;
 pub use js_sys::Reflect as JsReflect;
-pub use js_sys::wasm_bindgen::closure::WasmClosure;
-pub use js_sys::wasm_bindgen::{JsCast, JsValue, closure::Closure as JsClosure};
 pub use js_sys::eval as js_eval;
-pub use gloo;   // todo
+pub use js_sys::wasm_bindgen::{JsCast, JsValue, closure::Closure as JsClosure};
+
+use js_sys::wasm_bindgen::closure::WasmClosureFnOnce;
 use std::sync::LazyLock;
 use std::time::Duration;
 
@@ -67,3 +69,40 @@ impl JsUndefinedOption<Duration> {
         }
     }
 }
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct JsListenerID(uuid::Uuid);
+
+impl JsListenerID {
+    pub fn new() -> Self {
+        Self(uuid::Uuid::new_v4())
+    }
+}
+
+pub struct JsListener {
+    id: JsListenerID,
+    closure: JsFunction,
+}
+
+impl JsListener {
+    pub fn into_js_function(self) -> JsFunction {
+        self.closure
+    }
+
+    pub fn id(&self) -> JsListenerID {
+        self.id.clone()
+    }
+}
+
+
+pub trait JsListenerFrom<FnMut: ?Sized, A, R> {
+    fn from(x: impl WasmClosureFnOnce<FnMut, A, R>) -> JsListener {
+        JsListener {
+            id: JsListenerID::new(),
+            closure: x.into_js_function().dyn_into().unwrap(),
+        }
+    }
+}
+
+impl JsListenerFrom<dyn FnMut(), (), ()> for JsListener {}
+impl JsListenerFrom<dyn FnMut(JsValue), (JsValue, ), ()> for JsListener {}

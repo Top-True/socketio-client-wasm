@@ -1,4 +1,5 @@
 use js_raw::*;
+use std::time::Duration;
 
 pub mod options;
 pub mod parser;
@@ -21,7 +22,6 @@ impl Manager {
         .unwrap()
         .dyn_into()
         .unwrap();
-        gloo::console::log!(&raw);
         Self { raw }
     }
 
@@ -29,7 +29,101 @@ impl Manager {
         todo!()
     }
 
-    pub fn set_reconnection(self, value: bool) -> Self {
+    pub fn set_reconnection(&self, value: bool) -> &Self {
         todo!()
+    }
+
+    pub fn reconnection_attempts(&self) -> u32 {
+        todo!()
+    }
+
+    pub fn set_reconnection_attempts(&self, value: u32) -> &Self {
+        todo!()
+    }
+
+    pub fn reconnection_delay(&self) -> Duration {
+        todo!()
+    }
+
+    pub fn set_reconnection_delay(&self, value: Duration) -> &Self {
+        todo!()
+    }
+
+    pub fn reconnection_delay_max(&self) -> Duration {
+        todo!()
+    }
+
+    pub fn set_reconnection_delay_max(&self, value: Duration) -> &Self {
+        todo!()
+    }
+
+    pub fn timeout(&self) -> Duration {
+        todo!()
+    }
+
+    pub fn set_timeout(&self, timeout: Duration) -> &Self {
+        todo!()
+    }
+
+    pub fn open(&self) -> JsUndefinedOption<JsFunction> {
+        todo!()
+    }
+
+    pub fn set_open<S, F>(&self, succeed: S, fail: F) -> &Self
+    where
+        S: FnOnce(),
+        F: FnOnce(JsError),
+    {
+        todo!()
+    }
+}
+
+impl Manager {
+    pub fn on_error<CB>(&self, cb: CB)
+    where
+        CB: FnMut(JsError),
+    {
+        todo!()
+    }
+
+    pub fn on_reconnect<CB>(&self, cb: CB)
+    where
+        CB: FnMut(u32),
+    {
+        todo!()
+    }
+
+    pub fn on_reconnect_attempt<CB>(&self, cb: CB)
+    where
+        CB: FnMut(u32),
+    {
+        todo!()
+    }
+
+    pub fn on_reconnect_error<CB>(&self, cb: CB)
+    where
+        CB: FnMut(JsError),
+    {
+        todo!()
+    }
+
+    pub fn on_reconnect_failed<CB>(&self, cb: CB)
+    where
+        CB: FnMut(),
+    {
+        todo!()
+    }
+
+    pub fn on_ping<CB>(&self, cb: CB)
+    where
+        CB: FnMut(),
+    {
+        todo!()
+    }
+}
+
+impl Into<JsValue> for Manager {
+    fn into(self) -> JsValue {
+        self.raw.into()
     }
 }

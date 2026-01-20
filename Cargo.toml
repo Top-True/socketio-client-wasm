@@ -8,12 +8,10 @@ members = ["examples/hello-world", "crates/*"]
 
 [workspace.dependencies]
 js-raw = { path = "crates/js-raw" }
-engine-io = { path = "crates/engine-io" }
 socket-io = { path = "crates/socket-io" }
 socketio-client-wasm = { path = "." }
 
 
 [dependencies]
 js-raw = { workspace = true }
-engine-io = { workspace = true }
 socket-io = { workspace = true }

@@ -6,7 +6,7 @@ use socket_io::socket::Socket;
 pub struct Builder {
     pub(crate) uri: String,
     pub(crate) io_factory_options: IOFactoryOptions,
-    pub(crate) engine_io_options: engine_io::options::Options,
+    pub(crate) engine_io_options: socket_io::engine_io::Options,
     pub(crate) manager_options: socket_io::manager::options::Options,
     pub(crate) socket_options: socket_io::socket::options::Options,
 }

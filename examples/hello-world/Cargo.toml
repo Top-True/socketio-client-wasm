@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 socketio-client-wasm = { workspace = true }
 gloo = { version =  "0.11", features = ["default"] }
+js-sys = "0.3"
