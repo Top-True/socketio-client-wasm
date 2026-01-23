@@ -14,24 +14,15 @@ pub struct Builder {
 impl Builder {
     pub fn new(self) -> Socket {
         let options = JsObject::assign3(
-            &Into::<JsValue>::into(self.io_factory_options)
-                .dyn_into()
-                .unwrap(),
-            &Into::<JsValue>::into(self.engine_io_options)
-                .dyn_into()
-                .unwrap(),
-            &Into::<JsValue>::into(self.manager_options)
-                .dyn_into()
-                .unwrap(),
-            &Into::<JsValue>::into(self.socket_options)
-                .dyn_into()
-                .unwrap(),
+            &Into::<JsValue>::into(self.io_factory_options).unchecked_into(),
+            &Into::<JsValue>::into(self.engine_io_options).unchecked_into(),
+            &Into::<JsValue>::into(self.manager_options).unchecked_into(),
+            &Into::<JsValue>::into(self.socket_options).unchecked_into(),
         );
         let raw = global_io()
             .call2(&js_global(), &self.uri.as_str().into(), &options)
             .unwrap()
-            .dyn_into()
-            .unwrap();
-        Socket::new(raw)
+            .unchecked_into();
+        unsafe { Socket::new(raw) }
     }
 }

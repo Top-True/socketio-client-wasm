@@ -6,22 +6,20 @@ pub mod parser;
 
 #[derive(Debug, Clone)]
 pub struct Manager {
-    raw: JsObject,
+    pub(crate) raw: JsObject,
 }
 
 impl Manager {
     pub fn new(url: &impl AsRef<str>, options: options::Options) -> Self {
         let manager_class = JsReflect::get(&global_io(), &"Manager".into())
             .unwrap()
-            .dyn_into::<JsFunction>()
-            .unwrap();
+            .unchecked_into::<JsFunction>();
         let raw = JsReflect::construct(
             &manager_class,
             &JsArray::of2(&url.as_ref().into(), &options.into()),
         )
         .unwrap()
-        .dyn_into()
-        .unwrap();
+        .unchecked_into();
         Self { raw }
     }
 
@@ -79,51 +77,89 @@ impl Manager {
 }
 
 impl Manager {
-    pub fn on_error<CB>(&self, cb: CB)
+    pub fn on_ping<F>(&self, listener: F) -> JsFunction
     where
-        CB: FnMut(JsError),
+        F: FnMut() + 'static,
     {
-        todo!()
+        let func = JsClosure::new(listener)
+            .into_js_value()
+            .unchecked_into::<JsFunction>();
+        self.get_method("on")
+            .call2(&self.raw, &"ping".into(), &func)
+            .unwrap();
+        func
     }
 
-    pub fn on_reconnect<CB>(&self, cb: CB)
+    pub fn on_reconnect<F>(&self, listener: F) -> JsFunction
     where
-        CB: FnMut(u32),
+        F: FnMut(u32) + 'static,
     {
-        todo!()
+        let func = JsClosure::new(listener)
+            .into_js_value()
+            .unchecked_into::<JsFunction>();
+        self.get_method("on")
+            .call2(&self.raw, &"reconnect".into(), &func)
+            .unwrap();
+        func
     }
 
-    pub fn on_reconnect_attempt<CB>(&self, cb: CB)
+    pub fn on_reconnect_attempt<F>(&self, listener: F) -> JsFunction
     where
-        CB: FnMut(u32),
+        F: FnMut(u32) + 'static,
     {
-        todo!()
+        let func = JsClosure::new(listener)
+            .into_js_value()
+            .unchecked_into::<JsFunction>();
+        self.get_method("on")
+            .call2(&self.raw, &"reconnect_attempt".into(), &func)
+            .unwrap();
+        func
     }
 
-    pub fn on_reconnect_error<CB>(&self, cb: CB)
+    pub fn on_reconnect_error<F>(&self, listener: F) -> JsFunction
     where
-        CB: FnMut(JsError),
+        F: FnMut(JsValue) + 'static,
     {
-        todo!()
+        let func = JsClosure::new(listener)
+            .into_js_value()
+            .unchecked_into::<JsFunction>();
+        self.get_method("on")
+            .call2(&self.raw, &"reconnect_error".into(), &func)
+            .unwrap();
+        func
     }
 
-    pub fn on_reconnect_failed<CB>(&self, cb: CB)
+    pub fn on_reconnect_failed<F>(&self, listener: F) -> JsFunction
     where
-        CB: FnMut(),
+        F: FnMut(JsValue) + 'static,
     {
-        todo!()
-    }
-
-    pub fn on_ping<CB>(&self, cb: CB)
-    where
-        CB: FnMut(),
-    {
-        todo!()
+        let func = JsClosure::new(listener)
+            .into_js_value()
+            .unchecked_into::<JsFunction>();
+        self.get_method("on")
+            .call2(&self.raw, &"reconnect_failed".into(), &func)
+            .unwrap();
+        func
     }
 }
 
-impl Into<JsValue> for Manager {
-    fn into(self) -> JsValue {
-        self.raw.into()
+impl Manager {
+    #[inline]
+    fn get_method(&self, name: &str) -> JsFunction {
+        JsReflect::get(&self.raw, &name.into())
+            .unwrap()
+            .unchecked_into::<JsFunction>()
+    }
+}
+
+impl Into<JsObject> for Manager {
+    fn into(self) -> JsObject {
+        self.raw
+    }
+}
+
+impl AsRef<JsObject> for Manager {
+    fn as_ref(&self) -> &JsObject {
+        &self.raw
     }
 }
