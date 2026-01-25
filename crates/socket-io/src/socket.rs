@@ -1,8 +1,7 @@
 pub mod options;
 pub mod reason;
-
+use component_emitter::*;
 use js_raw::*;
-use std::str::FromStr;
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -31,8 +30,55 @@ pub struct Socket {
     pub(crate) raw: JsObject,
 }
 
+impl EmitterWithJsRaw for Socket {
+    fn from_raw(raw: JsObject) -> Socket {
+        Socket { raw }
+    }
+
+    fn raw(&self) -> &JsObject {
+        &self.raw
+    }
+}
+
+impl EmitterWithAck for Socket {
+    fn emit_with_ack(&self, ev: &str, arg: impl Into<JsValue>) -> JsFuture {
+        let promise = self
+            .get_method("emitWithAck")
+            .call2(&self.raw, &ev.into(), &arg.into())
+            .unwrap()
+            .unchecked_into::<JsPromise>();
+        JsFuture::from(promise)
+    }
+
+    fn emit_some_with_ack(&self, ev: &str, args: impl IntoIterator<Item = JsValue>) -> JsFuture {
+        let apply = JsArray::of1(&ev.into());
+        for arg in args {
+            apply.push(&arg);
+        }
+        let promise = self
+            .get_method("emitWithAck")
+            .apply(&self.raw, &apply)
+            .unwrap()
+            .unchecked_into::<JsPromise>();
+        JsFuture::from(promise)
+    }
+}
+
 impl Socket {
-    pub unsafe fn new(raw: JsObject) -> Self {
+    pub fn new(
+        io: crate::manager::Manager,
+        nsp: &impl AsRef<str>,
+        opts: &options::Options,
+    ) -> Self {
+        let socket_class = JsReflect::get(&js_global(), &"Socket".into())
+            .unwrap()
+            .unchecked_into::<JsFunction>();
+        let raw = JsReflect::construct(
+            &socket_class,
+            &JsArray::of3(io.as_ref(), &nsp.as_ref().into(), &opts.to_js()),
+        )
+        .unwrap()
+        .unchecked_into();
         Self { raw }
     }
 
@@ -56,11 +102,11 @@ impl Socket {
     }
 
     pub fn io(&self) -> crate::manager::Manager {
-        crate::manager::Manager {
-            raw: JsReflect::get(&self.raw, &"io".into())
+        crate::manager::Manager::from_raw(
+            JsReflect::get(&self.raw, &"io".into())
                 .unwrap()
                 .unchecked_into(),
-        }
+        )
     }
 
     pub fn connect(&self) -> &Self {
@@ -68,121 +114,14 @@ impl Socket {
         self
     }
 
-    pub fn send(&self, args: impl Into<JsValue>) -> &Self {
-        self.get_method("send")
-            .call1(&self.raw, &args.into())
-            .unwrap();
-        self
-    }
-
-    pub fn send_with_ack<A>(&self, args: impl Into<JsValue>, ack: A) -> &Self
-    where
-        A: FnOnce(JsValue) + 'static,
-    {
-        self.get_method("send")
-            .call2(&self.raw, &args.into(), &JsClosure::once_into_js(ack))
-            .unwrap();
-        self
-    }
-
-    pub fn emit(&self, event_name: &str, args: impl Into<JsValue>) -> &Self {
-        self.get_method("emit")
-            .call2(&self.raw, &event_name.into(), &args.into())
-            .unwrap();
-        self
-    }
-
-    pub fn emit_with_ack<A>(&self, event_name: &str, args: impl Into<JsValue>, ack: A) -> &Self
-    where
-        A: FnOnce(JsValue) + 'static,
-    {
-        self.get_method("emit")
-            .call3(
-                &self.raw,
-                &event_name.into(),
-                &args.into(),
-                &JsClosure::once_into_js(ack),
-            )
-            .unwrap();
-        self
-    }
-
-    pub fn on<F>(&self, event_name: &str, listener: F) -> JsFunction
-    where
-        F: FnMut(JsValue) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &event_name.into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn once<F>(&self, event_name: &str, listener: F) -> JsFunction
-    where
-        F: FnOnce(JsValue) + 'static,
-    {
-        let func = JsClosure::once_into_js(listener).unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &event_name.into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn off(&self, listener: &JsFunction) -> &Self {
-        self.get_method("off").call1(&self.raw, listener).unwrap();
-        self
-    }
-
-    pub fn off_all_listener(&self, event_name: &str) -> &Self {
-        self.get_method("off")
-            .call1(&self.raw, &event_name.into())
-            .unwrap();
-        self
-    }
-
-    pub fn off_all(&self) -> &Self {
-        self.get_method("off").call0(&self.raw).unwrap();
-        self
-    }
-
-    pub fn listeners(&self, event_name: &str) -> Vec<JsFunction> {
-        let l = self
-            .get_method("listeners")
-            .call1(&self.raw, &event_name.into())
-            .unwrap()
-            .unchecked_into::<JsArray>();
-        let mut result = Vec::with_capacity(l.length() as usize);
-        for i in l {
-            result.push(i.unchecked_into::<JsFunction>());
-        }
-        result
-    }
-
-    pub fn on_any<T>(&self, mut listener: T) -> JsFunction
-    where
-        T: FnMut(&str, JsValue) + 'static,
-    {
-        let func = JsClosure::new(move |event: JsString, args: JsValue| {
-            listener(event.as_string().unwrap().as_str(), args);
-        })
-        .into_js_value()
-        .unchecked_into::<JsFunction>();
+    pub fn on_any<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+        let func = listener.into_js_function();
         self.get_method("onAny").call1(&self.raw, &func).unwrap();
         func
     }
 
-    pub fn prepend_any<T>(&self, mut listener: T) -> JsFunction
-    where
-        T: FnMut(&str, JsValue) + 'static,
-    {
-        let func = JsClosure::new(move |event: JsString, args: JsValue| {
-            listener(event.as_string().unwrap().as_str(), args);
-        })
-        .into_js_value()
-        .unchecked_into::<JsFunction>();
+    pub fn prepend_any<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+        let func = listener.into_js_function();
         self.get_method("prependAny")
             .call1(&self.raw, &func)
             .unwrap();
@@ -214,30 +153,16 @@ impl Socket {
         result
     }
 
-    pub fn on_any_outgoing<F>(&self, mut callback: F) -> JsFunction
-    where
-        F: FnMut(&str, JsValue) + 'static,
-    {
-        let func = JsClosure::new(move |event: JsString, args: JsValue| {
-            callback(event.as_string().unwrap().as_str(), args);
-        })
-        .into_js_value()
-        .unchecked_into::<JsFunction>();
+    pub fn on_any_outgoing<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+        let func = listener.into_js_function();
         self.get_method("onAnyOutgoing")
             .call1(&self.raw, &func)
             .unwrap();
         func
     }
 
-    pub fn prepend_any_outgoing<T>(&self, mut listener: T) -> JsFunction
-    where
-        T: FnMut(&str, JsValue) + 'static,
-    {
-        let func = JsClosure::new(move |event: JsString, args: JsValue| {
-            listener(event.as_string().unwrap().as_str(), args);
-        })
-        .into_js_value()
-        .unchecked_into::<JsFunction>();
+    pub fn prepend_any_outgoing<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+        let func = listener.into_js_function();
         self.get_method("prependAnyOutgoing")
             .call1(&self.raw, &func)
             .unwrap();
@@ -252,7 +177,7 @@ impl Socket {
     }
 
     pub fn off_any_outgoing_all(&self) -> &Self {
-        self.get_method("offAny").call0(&self.raw).unwrap();
+        self.get_method("offAnyOutgoing").call0(&self.raw).unwrap();
         self
     }
 
@@ -294,106 +219,23 @@ impl Socket {
     }
 }
 
-impl Socket {
-    pub fn on_connect<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut() + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"connect".into(), &func)
-            .unwrap();
-        func
-    }
+// todo
+impl Socket {}
 
-    pub fn once_connect<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnOnce() + 'static,
-    {
-        let func = JsClosure::once_into_js(listener).unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &"connect".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_disconnect<F>(&self, mut listener: F) -> JsFunction
-    where
-        F: FnMut(reason::DisconnectReason) + 'static,
-    {
-        let func = JsClosure::new(move |reason: JsString| {
-            let reason =
-                reason::DisconnectReason::from_str(reason.as_string().unwrap().as_str()).unwrap();
-            listener(reason)
-        })
-        .into_js_value()
-        .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"disconnect".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn once_disconnect<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnOnce(reason::DisconnectReason) + 'static,
-    {
-        let func = JsClosure::once_into_js(move |reason: JsString| {
-            let reason =
-                reason::DisconnectReason::from_str(reason.as_string().unwrap().as_str()).unwrap();
-            listener(reason)
-        })
-        .unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &"disconnect".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_error<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(JsError) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"error".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn once_error<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnOnce(JsError) + 'static,
-    {
-        let func = JsClosure::once_into_js(listener).unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &"error".into(), &func)
-            .unwrap();
-        func
+impl Into<JsObject> for Socket {
+    fn into(self) -> JsObject {
+        self.raw
     }
 }
 
-impl Socket {
-    #[inline]
-    fn get_method(&self, name: &str) -> JsFunction {
-        JsReflect::get(&self.raw, &name.into())
-            .unwrap()
-            .unchecked_into::<JsFunction>()
+impl Into<JsValue> for Socket {
+    fn into(self) -> JsValue {
+        self.raw.into()
     }
 }
 
 impl AsRef<JsObject> for Socket {
     fn as_ref(&self) -> &JsObject {
         &self.raw
-    }
-}
-
-impl Into<JsObject> for Socket {
-    fn into(self) -> JsObject {
-        self.raw.into()
     }
 }

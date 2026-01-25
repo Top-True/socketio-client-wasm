@@ -6,11 +6,17 @@ pub struct Options {
     pub multiplex: JsUndefinedOption<bool>,
 }
 
-impl Into<JsValue> for Options {
-    fn into(self) -> JsValue {
+impl ToJs<JsObject> for Options {
+    fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "forceNew", &self.force_new.into());
-        set_property(&result, "multiplex", &self.multiplex.into());
-        result.into()
+        set_property(&result, "forceNew", &self.force_new.to_js());
+        set_property(&result, "multiplex", &self.multiplex.to_js());
+        result
+    }
+}
+
+impl ToJs<JsValue> for Options {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsObject>::to_js(self).into()
     }
 }

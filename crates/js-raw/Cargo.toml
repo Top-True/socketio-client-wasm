@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 js-sys = "0.3"
+wasm-bindgen-futures = "0.4"
 gloo = { version = "0.11", features = ["default"] }   # todo
 
 [build-dependencies]

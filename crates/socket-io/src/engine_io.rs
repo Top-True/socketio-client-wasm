@@ -20,34 +20,40 @@ pub struct Options {
     pub with_credentials: JsUndefinedOption<bool>,
 }
 
-impl Into<JsValue> for Options {
-    fn into(self) -> JsValue {
+impl ToJs<JsObject> for Options {
+    fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "addTrailingSlash", &self.add_trailing_slash.into());
-        set_property(&result, "autoUnref", &self.auto_unref.into());
+        set_property(&result, "addTrailingSlash", &self.add_trailing_slash.to_js());
+        set_property(&result, "autoUnref", &self.auto_unref.to_js());
         set_property(
             &result,
             "closeOnBeforeunload",
-            &self.close_on_beforeunload.into(),
+            &self.close_on_beforeunload.to_js(),
         );
-        set_property(&result, "extraHeaders", &self.extra_headers.into());
-        set_property(&result, "forceBase64", &self.force_base64.into());
-        set_property(&result, "path", &self.path.into());
-        set_property(&result, "protocols", &self.protocols.into());
-        set_property(&result, "query", &self.query.into());
-        set_property(&result, "rememberUpgrade", &self.remember_upgrade.into());
-        set_property(&result, "timestampParam", &self.timestamp_param.into());
+        set_property(&result, "extraHeaders", &self.extra_headers.to_js());
+        set_property(&result, "forceBase64", &self.force_base64.to_js());
+        set_property(&result, "path", &self.path.to_js());
+        set_property(&result, "protocols", &self.protocols.to_js());
+        set_property(&result, "query", &self.query.to_js());
+        set_property(&result, "rememberUpgrade", &self.remember_upgrade.to_js());
+        set_property(&result, "timestampParam", &self.timestamp_param.to_js());
         set_property(
             &result,
             "timestampRequests",
-            &self.timestamp_requests.into(),
+            &self.timestamp_requests.to_js(),
         );
-        set_property(&result, "transportOptions", &self.transport_options.into());
-        set_property(&result, "transports", &self.transports.into());
-        set_property(&result, "tryAllTransports", &self.try_all_transports.into());
-        set_property(&result, "upgrade", &self.upgrade.into());
-        set_property(&result, "withCredentials", &self.with_credentials.into());
-        result.into()
+        set_property(&result, "transportOptions", &self.transport_options.to_js());
+        set_property(&result, "transports", &self.transports.to_js());
+        set_property(&result, "tryAllTransports", &self.try_all_transports.to_js());
+        set_property(&result, "upgrade", &self.upgrade.to_js());
+        set_property(&result, "withCredentials", &self.with_credentials.to_js());
+        result
+    }
+}
+
+impl ToJs<JsValue> for Options {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsObject>::to_js(self).into()
     }
 }
 
@@ -58,8 +64,8 @@ pub struct TransportOption {
     pub webtransport: bool,
 }
 
-impl Into<JsValue> for TransportOption {
-    fn into(self) -> JsValue {
+impl ToJs<JsObject> for TransportOption {
+    fn to_js(&self) -> JsObject {
         let result = JsArray::new_with_length(3);
         if self.polling {
             result.set(0, "polling".into());
@@ -71,5 +77,11 @@ impl Into<JsValue> for TransportOption {
             result.set(2, "webtransport".into());
         }
         result.into()
+    }
+}
+
+impl ToJs<JsValue> for TransportOption {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsObject>::to_js(self).into()
     }
 }

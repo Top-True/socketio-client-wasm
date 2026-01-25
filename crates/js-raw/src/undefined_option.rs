@@ -1,3 +1,4 @@
+use crate::to_js::{DurationToJs, ToJs};
 use js_sys::wasm_bindgen::JsValue;
 use std::time::Duration;
 
@@ -13,20 +14,23 @@ impl<T> Default for JsUndefinedOption<T> {
     }
 }
 
-impl<T: Into<JsValue>> Into<JsValue> for JsUndefinedOption<T> {
-    fn into(self) -> JsValue {
+impl<T> ToJs<JsValue> for JsUndefinedOption<T>
+where
+    T: ToJs<JsValue>,
+{
+    fn to_js(&self) -> JsValue {
         match self {
             JsUndefinedOption::Undefined => JsValue::undefined(),
-            JsUndefinedOption::Some(x) => x.into(),
+            JsUndefinedOption::Some(x) => x.to_js(),
         }
     }
 }
 
-impl JsUndefinedOption<Duration> {
-    pub fn millis_into_js_value(self) -> JsValue {
+impl DurationToJs<JsValue> for JsUndefinedOption<Duration> {
+    fn millis_to_js(&self) -> JsValue {
         match self {
             JsUndefinedOption::Undefined => JsValue::undefined(),
-            JsUndefinedOption::Some(x) => (x.as_millis() as f64).into(),
+            JsUndefinedOption::Some(x) => x.millis_to_js(),
         }
     }
 }

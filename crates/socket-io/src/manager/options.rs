@@ -14,34 +14,40 @@ pub struct Options {
     pub timeout: JsUndefinedOption<Duration>,
 }
 
-impl Into<JsValue> for Options {
-    fn into(self) -> JsValue {
+impl ToJs<JsObject> for Options {
+    fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "autoConnect", &self.auto_connect.into());
+        set_property(&result, "autoConnect", &self.auto_connect.to_js());
         // set_property(&result, "parser", self.parser.into());
         set_property(
             &result,
             "randomizationFactor",
-            &self.randomization_factor.into(),
+            &self.randomization_factor.to_js(),
         );
-        set_property(&result, "reconnection", &self.reconnection.into());
+        set_property(&result, "reconnection", &self.reconnection.to_js());
         set_property(
             &result,
             "reconnectionAttempts",
-            &self.reconnection_attempts.into(),
+            &self.reconnection_attempts.to_js(),
         );
         set_property(
             &result,
             "reconnectionDelay",
-            &self.reconnection_delay.millis_into_js_value(),
+            &self.reconnection_delay.millis_to_js(),
         );
         set_property(
             &result,
             "reconnectionDelayMax",
-            &self.reconnection_delay_max.millis_into_js_value(),
+            &self.reconnection_delay_max.millis_to_js(),
         );
-        set_property(&result, "timeout", &self.timeout.millis_into_js_value());
+        set_property(&result, "timeout", &self.timeout.millis_to_js());
         result.into()
+    }
+}
+
+impl ToJs<JsValue> for Options {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsObject>::to_js(self).into()
     }
 }
 
@@ -51,11 +57,29 @@ pub enum ReconnectionAttempts {
     U32(u32),
 }
 
-impl Into<JsValue> for ReconnectionAttempts {
-    fn into(self) -> JsValue {
-        match self {
-            ReconnectionAttempts::Infinity => JsNumber::POSITIVE_INFINITY.into(),
-            ReconnectionAttempts::U32(x) => x.into(),
+impl From<JsNumber> for ReconnectionAttempts {
+    fn from(value: JsNumber) -> Self {
+        if JsNumber::is_finite(&value) {
+            ReconnectionAttempts::U32(value.as_f64().unwrap() as u32)
+        } else {
+            ReconnectionAttempts::Infinity
         }
+    }
+}
+
+impl ToJs<JsNumber> for ReconnectionAttempts {
+    fn to_js(&self) -> JsNumber {
+        match self {
+            ReconnectionAttempts::Infinity => js_eval("Number.POSITIVE_INFINITY")
+                .unwrap()
+                .unchecked_into(),
+            ReconnectionAttempts::U32(x) => (*x).into(),
+        }
+    }
+}
+
+impl ToJs<JsValue> for ReconnectionAttempts {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsNumber>::to_js(self).into()
     }
 }

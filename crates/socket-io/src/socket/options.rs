@@ -8,12 +8,18 @@ pub struct Options {
     pub retries: JsUndefinedOption<u32>,
 }
 
-impl Into<JsValue> for Options {
-    fn into(self) -> JsValue {
+impl ToJs<JsObject> for Options {
+    fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "ackTimeout", &self.ack_timeout.millis_into_js_value());
-        set_property(&result, "auth", &self.auth.into());
-        set_property(&result, "retries", &self.retries.into());
+        set_property(&result, "ackTimeout", &self.ack_timeout.millis_to_js());
+        set_property(&result, "auth", &self.auth.to_js());
+        set_property(&result, "retries", &self.retries.to_js());
         result.into()
+    }
+}
+
+impl ToJs<JsValue> for Options {
+    fn to_js(&self) -> JsValue {
+        ToJs::<JsObject>::to_js(self).into()
     }
 }

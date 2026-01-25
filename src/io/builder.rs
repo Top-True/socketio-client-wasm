@@ -13,16 +13,18 @@ pub struct Builder {
 
 impl Builder {
     pub fn new(self) -> Socket {
-        let options = JsObject::assign3(
-            &Into::<JsValue>::into(self.io_factory_options).unchecked_into(),
-            &Into::<JsValue>::into(self.engine_io_options).unchecked_into(),
-            &Into::<JsValue>::into(self.manager_options).unchecked_into(),
-            &Into::<JsValue>::into(self.socket_options).unchecked_into(),
-        );
+        // todo
+        // let options = JsObject::assign3(
+        //     &self.io_factory_options.to_js(),
+        //     &self.engine_io_options.to_js(),
+        //     &self.manager_options.to_js(),
+        //     &self.socket_options.to_js(),
+        // );
+        let options = JsObject::new();
         let raw = global_io()
             .call2(&js_global(), &self.uri.as_str().into(), &options)
             .unwrap()
             .unchecked_into();
-        unsafe { Socket::new(raw) }
+        component_emitter::EmitterWithJsRaw::from_raw(raw)
     }
 }
