@@ -526,6 +526,7 @@ version = "0.0.0"
 dependencies = [
  "gloo",
  "socketio-client-wasm",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]

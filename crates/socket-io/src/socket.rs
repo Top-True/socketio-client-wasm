@@ -43,7 +43,16 @@ impl EmitterWithJsRaw for Socket {
 }
 
 impl EmitterWithAck for Socket {
-    fn emit_with_ack(&self, ev: &str, arg: impl Into<JsValue>) -> JsFuture {
+    fn emit_with_ack(&self, ev: &str) -> JsFuture {
+        let promise = self
+            .get_method("emitWithAck")
+            .call1(&self.raw, &ev.into())
+            .unwrap()
+            .unchecked_into::<JsPromise>();
+        JsFuture::from(promise)
+    }
+
+    fn emit1_with_ack(&self, ev: &str, arg: impl Into<JsValue>) -> JsFuture {
         let promise = self
             .get_method("emitWithAck")
             .call2(&self.raw, &ev.into(), &arg.into())

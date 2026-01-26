@@ -22,14 +22,16 @@ pub trait Emitter {
     fn off(&self, listener: &JsFunction) -> &Self;
     fn remove_all_listeners_from(&self, ev: &str) -> &Self;
     fn remove_all_listeners(&self) -> &Self;
-    fn emit(&self, ev: &str, arg: impl Into<JsValue>) -> &Self;
+    fn emit(&self, ev: &str) -> &Self;
+    fn emit1(&self, ev: &str, arg: impl Into<JsValue>) -> &Self;
     fn emit_some(&self, ev: &str, args: impl IntoIterator<Item = JsValue>) -> &Self;
     fn listeners(&self, ev: &str) -> Vec<JsFunction>;
     fn has_listeners(&self, ev: &str) -> bool;
 }
 
 pub trait EmitterWithAck: Emitter {
-    fn emit_with_ack(&self, ev: &str, arg: impl Into<JsValue>) -> JsFuture;
+    fn emit_with_ack(&self, ev: &str) -> JsFuture;
+    fn emit1_with_ack(&self, ev: &str, arg: impl Into<JsValue>) -> JsFuture;
     fn emit_some_with_ack(&self, ev: &str, args: impl IntoIterator<Item = JsValue>) -> JsFuture;
 }
 
@@ -87,7 +89,14 @@ where
         self
     }
 
-    fn emit(&self, ev: &str, arg: impl Into<JsValue>) -> &Self {
+    fn emit(&self, ev: &str) -> &Self {
+        self.get_method("emit")
+            .call1(self.raw(), &ev.into())
+            .unwrap();
+        self
+    }
+
+    fn emit1(&self, ev: &str, arg: impl Into<JsValue>) -> &Self {
         self.get_method("emit")
             .call2(self.raw(), &ev.into(), &arg.into())
             .unwrap();

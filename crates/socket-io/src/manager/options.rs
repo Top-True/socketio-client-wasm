@@ -17,7 +17,6 @@ impl ToJs<JsObject> for Options {
         let result = JsObject::new();
         self.auto_connect
             .if_some_then(|x| set_property(&result, "autoConnect", &x));
-        // set_property(&result, "parser", self.parser.into());
         self.randomization_factor
             .if_some_then(|x| set_property(&result, "randomizationFactor", &x));
         self.reconnection
