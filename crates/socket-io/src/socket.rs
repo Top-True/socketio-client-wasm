@@ -1,7 +1,9 @@
 pub mod options;
 pub mod reason;
+
 use component_emitter::*;
 use js_raw::*;
+use std::str::FromStr;
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -219,8 +221,25 @@ impl Socket {
     }
 }
 
-// todo
-impl Socket {}
+impl_emitter_macro::impl_reserved! {
+    Socket {
+        connect(),
+        connect_error(JsError),
+        disconnect(reason::DisconnectReason) => |reason: JsString| {
+            let reason =
+                reason::DisconnectReason::from_str(reason.as_string().unwrap().as_str()).unwrap();
+            listener(reason)
+        },
+        newListener(&str, JsFunction) => |event_name: JsString, new_listener: JsFunction| {
+            let event_name = event_name.as_string().unwrap();
+            listener(event_name.as_str(), new_listener)
+        },
+        removeListener(&str, JsFunction) => |event_name: JsString, new_listener: JsFunction| {
+            let event_name = event_name.as_string().unwrap();
+            listener(event_name.as_str(), new_listener)
+        },
+    }
+}
 
 impl Into<JsObject> for Socket {
     fn into(self) -> JsObject {

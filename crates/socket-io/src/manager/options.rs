@@ -4,8 +4,6 @@ use std::time::Duration;
 #[derive(Debug, Clone, Default)]
 pub struct Options {
     pub auto_connect: JsOption<bool>,
-    // todo
-    // pub parser: JsUndefinedOption<super::parser::Parser>,
     pub randomization_factor: JsOption<f64>,
     pub reconnection: JsOption<bool>,
     pub reconnection_attempts: JsOption<ReconnectionAttempts>,

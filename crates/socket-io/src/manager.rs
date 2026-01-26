@@ -4,7 +4,6 @@ use js_raw::*;
 use std::time::Duration;
 
 pub mod options;
-pub mod parser;
 
 #[derive(Debug, Clone)]
 pub struct Manager {
@@ -144,121 +143,16 @@ impl Manager {
     }
 }
 
-// todo
-impl Manager {
-    pub fn on_open<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut() + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"open".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn once_open<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnOnce() + 'static,
-    {
-        let func = JsClosure::once_into_js(listener)
-            .unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &"open".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_error<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(JsError) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"error".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn once_error<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnOnce(JsError) + 'static,
-    {
-        let func = JsClosure::once_into_js(listener)
-            .unchecked_into::<JsFunction>();
-        self.get_method("once")
-            .call2(&self.raw, &"error".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_ping<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut() + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"ping".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_reconnect<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(u32) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"reconnect".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_reconnect_attempt<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(u32) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"reconnect_attempt".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_reconnect_error<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(JsValue) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"reconnect_error".into(), &func)
-            .unwrap();
-        func
-    }
-
-    pub fn on_reconnect_failed<F>(&self, listener: F) -> JsFunction
-    where
-        F: FnMut(JsValue) + 'static,
-    {
-        let func = JsClosure::new(listener)
-            .into_js_value()
-            .unchecked_into::<JsFunction>();
-        self.get_method("on")
-            .call2(&self.raw, &"reconnect_failed".into(), &func)
-            .unwrap();
-        func
+impl_emitter_macro::impl_reserved! {
+    Manager {
+        open(),
+        error(JsError),
+        ping(),
+        close(JsString),
+        reconnect_failed(),
+        reconnect_attempt(u32),
+        reconnect_error(JsError),
+        reconnect(u32),
     }
 }
 
