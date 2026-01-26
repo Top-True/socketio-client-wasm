@@ -2,51 +2,51 @@ use js_raw::*;
 
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    pub add_trailing_slash: JsUndefinedOption<bool>,
-    pub auto_unref: JsUndefinedOption<bool>,
-    pub close_on_beforeunload: JsUndefinedOption<bool>,
-    pub extra_headers: JsUndefinedOption<JsObject>,
-    pub force_base64: JsUndefinedOption<bool>,
-    pub path: JsUndefinedOption<String>,
-    pub protocols: JsUndefinedOption<Vec<String>>,
-    pub query: JsUndefinedOption<JsObject>,
-    pub remember_upgrade: JsUndefinedOption<bool>,
-    pub timestamp_param: JsUndefinedOption<String>,
-    pub timestamp_requests: JsUndefinedOption<bool>,
-    pub transport_options: JsUndefinedOption<JsObject>,
-    pub transports: JsUndefinedOption<TransportOption>,
-    pub try_all_transports: JsUndefinedOption<bool>,
-    pub upgrade: JsUndefinedOption<bool>,
-    pub with_credentials: JsUndefinedOption<bool>,
+    pub add_trailing_slash: JsOption<bool>,
+    pub auto_unref: JsOption<bool>,
+    pub close_on_beforeunload: JsOption<bool>,
+    pub extra_headers: JsOption<JsObject>,
+    pub force_base64: JsOption<bool>,
+    pub path: JsOption<String>,
+    pub protocols: JsOption<Vec<String>>,
+    pub query: JsOption<JsObject>,
+    pub remember_upgrade: JsOption<bool>,
+    pub timestamp_param: JsOption<String>,
+    pub timestamp_requests: JsOption<bool>,
+    pub transport_options: JsOption<JsObject>,
+    pub transports: JsOption<TransportOption>,
+    pub try_all_transports: JsOption<bool>,
+    pub upgrade: JsOption<bool>,
+    pub with_credentials: JsOption<bool>,
 }
 
 impl ToJs<JsObject> for Options {
     fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "addTrailingSlash", &self.add_trailing_slash.to_js());
-        set_property(&result, "autoUnref", &self.auto_unref.to_js());
-        set_property(
+        self.add_trailing_slash.if_some_then(|x| set_property(&result, "addTrailingSlash", &x));
+        self.auto_unref.if_some_then(|x| set_property(&result, "autoUnref", &x));
+        self.close_on_beforeunload.if_some_then(|x| set_property(
             &result,
             "closeOnBeforeunload",
-            &self.close_on_beforeunload.to_js(),
-        );
-        set_property(&result, "extraHeaders", &self.extra_headers.to_js());
-        set_property(&result, "forceBase64", &self.force_base64.to_js());
-        set_property(&result, "path", &self.path.to_js());
-        set_property(&result, "protocols", &self.protocols.to_js());
-        set_property(&result, "query", &self.query.to_js());
-        set_property(&result, "rememberUpgrade", &self.remember_upgrade.to_js());
-        set_property(&result, "timestampParam", &self.timestamp_param.to_js());
-        set_property(
+            &x,
+        ));
+        self.extra_headers.if_some_then(|x| set_property(&result, "extraHeaders", &x));
+        self.force_base64.if_some_then (|x| set_property(&result, "forceBase64", &x));
+        self.path.if_some_then (|x| set_property(&result, "path", &x));
+        self.protocols.if_some_then (|x| set_property(&result, "protocols", &x));
+        self.query.if_some_then (|x| set_property(&result, "query", &x));
+        self.remember_upgrade.if_some_then (|x| set_property(&result, "rememberUpgrade", &x));
+        self.timestamp_param.if_some_then (|x| set_property(&result, "timestampParam", &x));
+        self.timestamp_requests.if_some_then(|x| set_property(
             &result,
             "timestampRequests",
-            &self.timestamp_requests.to_js(),
-        );
-        set_property(&result, "transportOptions", &self.transport_options.to_js());
-        set_property(&result, "transports", &self.transports.to_js());
-        set_property(&result, "tryAllTransports", &self.try_all_transports.to_js());
-        set_property(&result, "upgrade", &self.upgrade.to_js());
-        set_property(&result, "withCredentials", &self.with_credentials.to_js());
+            &x,
+        ));
+        self.transport_options.if_some_then(|x| set_property(&result, "transportOptions", &x));
+        self.transports.if_some_then2(|x| set_property(&result, "transports", &x));
+        self.try_all_transports.if_some_then(|x| set_property(&result, "tryAllTransports", &x));
+        self.upgrade.if_some_then(|x| set_property(&result, "upgrade", &x));
+        self.with_credentials.if_some_then(|x| set_property(&result, "withCredentials", &x));
         result
     }
 }

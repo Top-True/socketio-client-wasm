@@ -3,17 +3,21 @@ use std::time::Duration;
 
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    pub ack_timeout: JsUndefinedOption<Duration>,
-    pub auth: JsUndefinedOption<JsObject>,
-    pub retries: JsUndefinedOption<u32>,
+    pub ack_timeout: JsOption<Duration>,
+    pub auth: JsOption<JsObject>,
+    pub retries: JsOption<u32>,
 }
 
 impl ToJs<JsObject> for Options {
     fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "ackTimeout", &self.ack_timeout.millis_to_js());
-        set_property(&result, "auth", &self.auth.to_js());
-        set_property(&result, "retries", &self.retries.to_js());
+        if let JsOption::Some(x) = self.ack_timeout {
+            set_property(&result, "ackTimeout", &x.millis_to_js());
+        }
+        self.auth
+            .if_some_then(|x| set_property(&result, "auth", &x));
+        self.retries
+            .if_some_then(|x| set_property(&result, "retries", &x));
         result.into()
     }
 }

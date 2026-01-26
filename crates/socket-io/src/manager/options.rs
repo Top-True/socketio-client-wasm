@@ -3,44 +3,38 @@ use std::time::Duration;
 
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    pub auto_connect: JsUndefinedOption<bool>,
+    pub auto_connect: JsOption<bool>,
     // todo
     // pub parser: JsUndefinedOption<super::parser::Parser>,
-    pub randomization_factor: JsUndefinedOption<f64>,
-    pub reconnection: JsUndefinedOption<bool>,
-    pub reconnection_attempts: JsUndefinedOption<ReconnectionAttempts>,
-    pub reconnection_delay: JsUndefinedOption<Duration>,
-    pub reconnection_delay_max: JsUndefinedOption<Duration>,
-    pub timeout: JsUndefinedOption<Duration>,
+    pub randomization_factor: JsOption<f64>,
+    pub reconnection: JsOption<bool>,
+    pub reconnection_attempts: JsOption<ReconnectionAttempts>,
+    pub reconnection_delay: JsOption<Duration>,
+    pub reconnection_delay_max: JsOption<Duration>,
+    pub timeout: JsOption<Duration>,
 }
 
 impl ToJs<JsObject> for Options {
     fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "autoConnect", &self.auto_connect.to_js());
+        self.auto_connect
+            .if_some_then(|x| set_property(&result, "autoConnect", &x));
         // set_property(&result, "parser", self.parser.into());
-        set_property(
-            &result,
-            "randomizationFactor",
-            &self.randomization_factor.to_js(),
-        );
-        set_property(&result, "reconnection", &self.reconnection.to_js());
-        set_property(
-            &result,
-            "reconnectionAttempts",
-            &self.reconnection_attempts.to_js(),
-        );
-        set_property(
-            &result,
-            "reconnectionDelay",
-            &self.reconnection_delay.millis_to_js(),
-        );
-        set_property(
-            &result,
-            "reconnectionDelayMax",
-            &self.reconnection_delay_max.millis_to_js(),
-        );
-        set_property(&result, "timeout", &self.timeout.millis_to_js());
+        self.randomization_factor
+            .if_some_then(|x| set_property(&result, "randomizationFactor", &x));
+        self.reconnection
+            .if_some_then(|x| set_property(&result, "reconnection", &x));
+        self.reconnection_attempts
+            .if_some_then2(|x| set_property(&result, "reconnectionAttempts", &x));
+        if let JsOption::Some(x) = self.reconnection_delay {
+            set_property(&result, "reconnectionDelay", &x.millis_to_js());
+        }
+        if let JsOption::Some(x) = self.reconnection_delay_max {
+            set_property(&result, "reconnectionDelayMax", &x.millis_to_js());
+        }
+        if let JsOption::Some(x) = self.timeout {
+            set_property(&result, "timeout", &x.millis_to_js());
+        }
         result.into()
     }
 }

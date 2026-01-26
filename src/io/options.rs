@@ -2,15 +2,17 @@ use js_raw::*;
 
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    pub force_new: JsUndefinedOption<bool>,
-    pub multiplex: JsUndefinedOption<bool>,
+    pub force_new: JsOption<bool>,
+    pub multiplex: JsOption<bool>,
 }
 
 impl ToJs<JsObject> for Options {
     fn to_js(&self) -> JsObject {
         let result = JsObject::new();
-        set_property(&result, "forceNew", &self.force_new.to_js());
-        set_property(&result, "multiplex", &self.multiplex.to_js());
+        self.force_new
+            .if_some_then(|x| set_property(&result, "forceNew", &x));
+        self.multiplex
+            .if_some_then(|x| set_property(&result, "multiplex", &x));
         result
     }
 }

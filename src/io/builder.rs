@@ -13,14 +13,12 @@ pub struct Builder {
 
 impl Builder {
     pub fn new(self) -> Socket {
-        // todo
-        // let options = JsObject::assign3(
-        //     &self.io_factory_options.to_js(),
-        //     &self.engine_io_options.to_js(),
-        //     &self.manager_options.to_js(),
-        //     &self.socket_options.to_js(),
-        // );
-        let options = JsObject::new();
+        let options = JsObject::assign3(
+            &self.io_factory_options.to_js(),
+            &self.engine_io_options.to_js(),
+            &self.manager_options.to_js(),
+            &self.socket_options.to_js(),
+        );
         let raw = global_io()
             .call2(&js_global(), &self.uri.as_str().into(), &options)
             .unwrap()
