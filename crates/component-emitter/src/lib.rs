@@ -2,23 +2,23 @@ use js_raw::*;
 
 pub mod listener_impl;
 
-pub trait OnListener<A> {
+pub trait OnListener<A, const ASYNC: bool> {
     fn into_js_function(self) -> JsFunction;
 }
-pub trait OnceListener<A> {
+pub trait OnceListener<A, const ASYNC: bool> {
     fn into_js_function(self) -> JsFunction;
 }
-pub trait OnAnyListener<A> {
+pub trait OnAnyListener<A, const ASYNC: bool> {
     fn into_js_function(self) -> JsFunction;
 }
 
 pub trait Emitter {
-    fn on<L, A>(&self, ev: &str, listener: L) -> JsFunction
+    fn on<L, A, const ASYNC: bool>(&self, ev: &str, listener: L) -> JsFunction
     where
-        L: OnListener<A>;
-    fn once<L, A>(&self, ev: &str, listener: L) -> JsFunction
+        L: OnListener<A, ASYNC>;
+    fn once<L, A, const ASYNC: bool>(&self, ev: &str, listener: L) -> JsFunction
     where
-        L: OnceListener<A>;
+        L: OnceListener<A, ASYNC>;
     fn off(&self, listener: &JsFunction) -> &Self;
     fn remove_all_listeners_from(&self, ev: &str) -> &Self;
     fn remove_all_listeners(&self) -> &Self;
@@ -50,9 +50,9 @@ impl<T> Emitter for T
 where
     T: EmitterWithJsRaw,
 {
-    fn on<L, A>(&self, ev: &str, listener: L) -> JsFunction
+    fn on<L, A, const ASYNC: bool>(&self, ev: &str, listener: L) -> JsFunction
     where
-        L: OnListener<A>,
+        L: OnListener<A, ASYNC>,
     {
         let func = listener.into_js_function();
         self.get_method("on")
@@ -61,9 +61,9 @@ where
         func
     }
 
-    fn once<L, A>(&self, ev: &str, listener: L) -> JsFunction
+    fn once<L, A, const ASYNC: bool>(&self, ev: &str, listener: L) -> JsFunction
     where
-        L: OnceListener<A>,
+        L: OnceListener<A, ASYNC>,
     {
         let func = listener.into_js_function();
         self.get_method("once")

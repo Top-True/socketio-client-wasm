@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 pub enum DisconnectReason {
@@ -30,6 +31,28 @@ impl FromStr for DisconnectReason {
             "transport close" => Ok(DisconnectReason::TransportClose),
             "transport error" => Ok(DisconnectReason::TransportError),
             _ => Err(()),
+        }
+    }
+}
+
+impl Display for DisconnectReason {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DisconnectReason::IoServerDisconnect => {
+                write!(f, "io server disconnect")
+            }
+            DisconnectReason::IoClientDisconnect => {
+                write!(f, "io client disconnect")
+            }
+            DisconnectReason::PingTimeout => {
+                write!(f, "ping timeout")
+            }
+            DisconnectReason::TransportClose => {
+                write!(f, "transport close")
+            }
+            DisconnectReason::TransportError => {
+                write!(f, "transport error")
+            }
         }
     }
 }

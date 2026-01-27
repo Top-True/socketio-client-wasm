@@ -19,3 +19,4 @@ pub use js_sys::wasm_bindgen::{JsCast, JsValue, closure::Closure as JsClosure};
 pub use to_js::{DurationToJs, ToJs};
 pub use utils::set_property;
 pub use wasm_bindgen_futures::JsFuture;
+pub use wasm_bindgen_futures::future_to_promise;

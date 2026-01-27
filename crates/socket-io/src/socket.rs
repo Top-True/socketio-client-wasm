@@ -125,13 +125,19 @@ impl Socket {
         self
     }
 
-    pub fn on_any<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+    pub fn on_any<A, const ASYNC: bool>(
+        &self,
+        listener: impl OnAnyListener<A, ASYNC>,
+    ) -> JsFunction {
         let func = listener.into_js_function();
         self.get_method("onAny").call1(&self.raw, &func).unwrap();
         func
     }
 
-    pub fn prepend_any<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+    pub fn prepend_any<A, const ASYNC: bool>(
+        &self,
+        listener: impl OnAnyListener<A, ASYNC>,
+    ) -> JsFunction {
         let func = listener.into_js_function();
         self.get_method("prependAny")
             .call1(&self.raw, &func)
@@ -164,7 +170,10 @@ impl Socket {
         result
     }
 
-    pub fn on_any_outgoing<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+    pub fn on_any_outgoing<A, const ASYNC: bool>(
+        &self,
+        listener: impl OnAnyListener<A, ASYNC>,
+    ) -> JsFunction {
         let func = listener.into_js_function();
         self.get_method("onAnyOutgoing")
             .call1(&self.raw, &func)
@@ -172,7 +181,10 @@ impl Socket {
         func
     }
 
-    pub fn prepend_any_outgoing<A>(&self, listener: impl OnAnyListener<A>) -> JsFunction {
+    pub fn prepend_any_outgoing<A, const ASYNC: bool>(
+        &self,
+        listener: impl OnAnyListener<A, ASYNC>,
+    ) -> JsFunction {
         let func = listener.into_js_function();
         self.get_method("prependAnyOutgoing")
             .call1(&self.raw, &func)
@@ -239,13 +251,11 @@ impl_emitter_macro::impl_reserved! {
                 reason::DisconnectReason::from_str(reason.as_string().unwrap().as_str()).unwrap();
             listener(reason)
         },
-        newListener(&str, JsFunction) => |event_name: JsString, new_listener: JsFunction| {
-            let event_name = event_name.as_string().unwrap();
-            listener(event_name.as_str(), new_listener)
+        newListener(String, JsFunction) => |event_name: JsString, new_listener: JsFunction| {
+            listener(event_name.as_string().unwrap(), new_listener)
         },
-        removeListener(&str, JsFunction) => |event_name: JsString, new_listener: JsFunction| {
-            let event_name = event_name.as_string().unwrap();
-            listener(event_name.as_str(), new_listener)
+        removeListener(String, JsFunction) => |event_name: JsString, the_listener: JsFunction| {
+            listener(event_name.as_string().unwrap(), the_listener)
         },
     }
 }
