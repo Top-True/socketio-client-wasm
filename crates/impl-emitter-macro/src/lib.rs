@@ -5,7 +5,7 @@ use quote::{format_ident, quote};
 use syn::LitStr;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{ExprClosure, Token, Type};
+use syn::{ExprClosure, Token, Type, parse_macro_input};
 use syn::{braced, parenthesized};
 
 mod utils;
@@ -42,8 +42,11 @@ impl Parse for Events {
         let mut layer = None;
         if input.parse::<Token![=>]>().is_ok() {
             let mut t = ExprClosure::parse(input).expect("failed to parse closure");
-            if t.capture.is_some() {
-                panic!("capture function should not have captured here");
+            if let Some(c) = t.capture {
+                return Err(syn::Error::new(
+                    c.span,
+                    "capture function should not have captured here",
+                ));
             }
             t.capture = Some(Token![move](Span::call_site()));
             layer = Some(t);
@@ -54,7 +57,7 @@ impl Parse for Events {
 
 #[proc_macro]
 pub fn impl_reserved(input: TokenStream) -> TokenStream {
-    let parsed = syn::parse::<ImplReserved>(input).expect("Syntax Error: impl_reserved");
+    let parsed = parse_macro_input!(input as ImplReserved);
     let name = parsed.name;
     let mut on_impls = Vec::with_capacity(parsed.events.len() * 2);
     let mut once_impls = Vec::with_capacity(parsed.events.len() * 2);
