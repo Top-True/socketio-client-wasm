@@ -1,9 +1,0 @@
-[package]
-name = "socket-io"
-version = "0.0.0"
-edition = "2024"
-
-[dependencies]
-js-raw = { workspace = true }
-component-emitter = { workspace = true }
-impl-emitter-macro = { workspace = true }

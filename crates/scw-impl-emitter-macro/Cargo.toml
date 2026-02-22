@@ -1,5 +1,5 @@
 [package]
-name = "impl-emitter-macro"
+name = "scw-impl-emitter-macro"
 version = "0.0.0"
 edition = "2024"
 

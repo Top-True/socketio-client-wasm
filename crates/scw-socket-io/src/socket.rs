@@ -1,8 +1,8 @@
 pub mod options;
 pub mod reason;
 
-use component_emitter::*;
-use js_raw::*;
+use scw_component_emitter::*;
+use scw_js_raw::*;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -242,7 +242,7 @@ impl Socket {
     }
 }
 
-impl_emitter_macro::impl_reserved! {
+scw_impl_emitter_macro::impl_reserved! {
     Socket {
         connect(),
         connect_error(JsError),

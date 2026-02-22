@@ -74,13 +74,13 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 on_impls.push({
                     let fn_name = format_ident!("on_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: FnMut(#args) + 'static
                         {
-                            let func = ::js_raw::JsClosure::new(listener)
+                            let func = ::scw_js_raw::JsClosure::new(listener)
                                 .into_js_value()
-                                .unchecked_into::<::js_raw::JsFunction>();
+                                .unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("on")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -91,19 +91,19 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 on_impls.push({
                     let fn_name = format_ident!("async_on_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: AsyncFnMut(#args) + 'static
                         {
                             let raw = ::std::sync::Arc::new(::std::sync::Mutex::new(listener));
-                            let func = ::js_raw::JsClosure::<dyn FnMut(#args) -> ::js_raw::JsPromise>::new(move |#idents| {
+                            let func = ::scw_js_raw::JsClosure::<dyn FnMut(#args) -> ::scw_js_raw::JsPromise>::new(move |#idents| {
                                 let raw = raw.clone();
-                                ::js_raw::future_to_promise(async move {
+                                ::scw_js_raw::future_to_promise(async move {
                                     raw.lock().unwrap()(#idents).await;
                                     Ok(JsValue::undefined())
                                 })})
                                 .into_js_value()
-                                .unchecked_into::<::js_raw::JsFunction>();
+                                .unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("on")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -114,11 +114,11 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 once_impls.push({
                     let fn_name = format_ident!("once_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: FnOnce(#args) + 'static
                         {
-                            let func = ::js_raw::JsClosure::once_into_js(listener).unchecked_into::<::js_raw::JsFunction>();
+                            let func = ::scw_js_raw::JsClosure::once_into_js(listener).unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("once")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -129,16 +129,16 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 once_impls.push({
                     let fn_name = format_ident!("async_once_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: AsyncFnOnce(#args) + 'static
                         {
-                            let func = ::js_raw::JsClosure::once_into_js(move |#idents| {
+                            let func = ::scw_js_raw::JsClosure::once_into_js(move |#idents| {
                             future_to_promise(async move {
                                 listener(#idents).await;
-                                Ok(::js_raw::JsValue::undefined())
+                                Ok(::scw_js_raw::JsValue::undefined())
                             })
-                        }).unchecked_into::<::js_raw::JsFunction>();
+                        }).unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("once")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -151,13 +151,13 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 on_impls.push({
                     let fn_name = format_ident!("on_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, mut listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, mut listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: FnMut(#args) + 'static
                         {
-                            let func = ::js_raw::JsClosure::new(#layer)
+                            let func = ::scw_js_raw::JsClosure::new(#layer)
                                 .into_js_value()
-                                .unchecked_into::<::js_raw::JsFunction>();
+                                .unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("on")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -171,21 +171,21 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                     extractor.extract_from_closure(&layer);
                     let pat = extractor.types;
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: AsyncFnMut(#args) + 'static
                         {
                             let raw = ::std::sync::Arc::new(::std::sync::Mutex::new(listener));
                             let listener = move |#idents| {
                                 let raw = raw.clone();
-                                ::js_raw::future_to_promise(async move {
+                                ::scw_js_raw::future_to_promise(async move {
                                     raw.lock().unwrap()(#idents).await;
-                                    Ok(::js_raw::JsValue::undefined())
+                                    Ok(::scw_js_raw::JsValue::undefined())
                                 })
                             };
-                            let func = ::js_raw::JsClosure::<dyn FnMut(#pat) -> ::js_raw::JsPromise>::new(#layer)
+                            let func = ::scw_js_raw::JsClosure::<dyn FnMut(#pat) -> ::scw_js_raw::JsPromise>::new(#layer)
                                 .into_js_value()
-                                .unchecked_into::<::js_raw::JsFunction>();
+                                .unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("on")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -196,11 +196,11 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 once_impls.push({
                     let fn_name = format_ident!("once_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: FnOnce(#args) + 'static
                         {
-                            let func = ::js_raw::JsClosure::once_into_js(#layer).unchecked_into::<::js_raw::JsFunction>();
+                            let func = ::scw_js_raw::JsClosure::once_into_js(#layer).unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("once")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();
@@ -211,17 +211,17 @@ pub fn impl_reserved(input: TokenStream) -> TokenStream {
                 once_impls.push({
                     let fn_name = format_ident!("async_once_{}", name);
                     quote! {
-                        pub fn #fn_name<F>(&self, listener: F) -> ::js_raw::JsFunction
+                        pub fn #fn_name<F>(&self, listener: F) -> ::scw_js_raw::JsFunction
                         where
                             F: AsyncFnOnce(#args) + 'static
                         {
                             let listener = move |#idents| {
-                                ::js_raw::future_to_promise(async move {
+                                ::scw_js_raw::future_to_promise(async move {
                                     listener(#idents).await;
                                     Ok(JsValue::undefined())
                                 })
                             };
-                            let func = ::js_raw::JsClosure::once_into_js(#layer).unchecked_into::<::js_raw::JsFunction>();
+                            let func = ::scw_js_raw::JsClosure::once_into_js(#layer).unchecked_into::<::scw_js_raw::JsFunction>();
                             self.get_method("once")
                                 .call2(&self.raw, &#event_name.into(), &func)
                                 .unwrap();

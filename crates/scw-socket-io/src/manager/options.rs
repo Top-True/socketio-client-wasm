@@ -1,4 +1,4 @@
-use js_raw::*;
+use scw_js_raw::*;
 use std::time::Duration;
 
 #[derive(Debug, Clone, Default)]

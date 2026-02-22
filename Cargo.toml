@@ -1,6 +1,6 @@
 [package]
 name = "socketio-client-wasm"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 license = "MIT"
 
@@ -8,13 +8,13 @@ license = "MIT"
 members = ["examples/hello-world", "crates/*"]
 
 [workspace.dependencies]
-js-raw = { path = "crates/js-raw" }
-component-emitter = { path = "crates/component-emitter" }
-impl-emitter-macro = { path = "crates/impl-emitter-macro" }
-socket-io = { path = "crates/socket-io" }
+scw-js-raw = { path = "crates/scw-js-raw" }
+scw-component-emitter = { path = "crates/scw-component-emitter" }
+scw-impl-emitter-macro = { path = "crates/scw-impl-emitter-macro" }
+scw-socket-io = { path = "crates/scw-socket-io" }
 socketio-client-wasm = { path = "." }
 
 [dependencies]
-js-raw = { workspace = true }
-component-emitter = { workspace = true }
-socket-io = { workspace = true }
+scw-js-raw = { workspace = true }
+scw-component-emitter = { workspace = true }
+scw-socket-io = { workspace = true }

@@ -1,30 +1,33 @@
 use super::options::Options as IOFactoryOptions;
-use js_raw::*;
-use socket_io::socket::Socket;
+use scw_js_raw::*;
+use scw_socket_io::socket::Socket;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct Builder {
     pub(crate) uri: String,
     pub(crate) io_factory_options: IOFactoryOptions,
-    pub(crate) engine_io_options: socket_io::engine_io::Options,
-    pub(crate) manager_options: socket_io::manager::options::Options,
-    pub(crate) socket_options: socket_io::socket::options::Options,
+    pub(crate) engine_io_options: scw_socket_io::engine_io::Options,
+    pub(crate) manager_options: scw_socket_io::manager::options::Options,
+    pub(crate) socket_options: scw_socket_io::socket::options::Options,
 }
 
 impl Builder {
     pub fn new(self) -> Socket {
-        let options = JsObject::assign3(
+        let options = JsObject::assign_many(
             &self.io_factory_options.to_js(),
-            &self.engine_io_options.to_js(),
-            &self.manager_options.to_js(),
-            &self.socket_options.to_js(),
-        );
+            &[
+                self.engine_io_options.to_js(),
+                self.manager_options.to_js(),
+                self.socket_options.to_js(),
+            ],
+        )
+        .unwrap();
         let raw = global_io()
             .call2(&js_global(), &self.uri.as_str().into(), &options)
             .unwrap()
             .unchecked_into();
-        component_emitter::EmitterWithJsRaw::from_raw(raw)
+        scw_component_emitter::EmitterWithJsRaw::from_raw(raw)
     }
 }
 
@@ -52,7 +55,7 @@ impl Builder {
     opt_impl!(engine_io_options.timestamp_param(String));
     opt_impl!(engine_io_options.timestamp_requests(bool));
     opt_impl!(engine_io_options.transport_options(JsObject));
-    opt_impl!(engine_io_options.transports(socket_io::engine_io::TransportOption));
+    opt_impl!(engine_io_options.transports(scw_socket_io::engine_io::TransportOption));
     opt_impl!(engine_io_options.try_all_transports(bool));
     opt_impl!(engine_io_options.upgrade(bool));
     opt_impl!(engine_io_options.with_credentials(bool));
@@ -60,7 +63,8 @@ impl Builder {
     opt_impl!(manager_options.randomization_factor(f64));
     opt_impl!(manager_options.reconnection(bool));
     opt_impl!(
-        manager_options.reconnection_attempts(socket_io::manager::options::ReconnectionAttempts)
+        manager_options
+            .reconnection_attempts(scw_socket_io::manager::options::ReconnectionAttempts)
     );
     opt_impl!(manager_options.reconnection_delay(Duration));
     opt_impl!(manager_options.reconnection_delay_max(Duration));

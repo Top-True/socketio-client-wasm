@@ -30,49 +30,35 @@ socketio-client-wasm/
 │   ├── lib.rs                    # Library entry point
 │   └── prelude.rs                # Convenient re-exports
 ├── crates/
-│   ├── socket-io/                # Core Socket.IO implementation
-│   ├── component-emitter/        # Event emitter trait and implementation
-│   ├── js-raw/                   # JavaScript interop utilities
-│   └── impl-emitter-macro/       # Procedural macros for emitters
+│   ├── scw-socket-io/                # Core Socket.IO implementation
+│   ├── scw-component-emitter/        # Event emitter trait and implementation
+│   ├── scw-js-raw/                   # JavaScript interop utilities
+│   └── scw-impl-emitter-macro/       # Procedural macros for emitters
 └── examples/
     └── hello-world/              # Basic usage example
 ```
 
 ### Core Components
 
-#### 1. **socket-io**
+#### 1. **scw-socket-io**
 The core Socket.IO client implementation providing:
 - Socket connection management
 - Event emission and listening
 - Acknowledgment support
 - Engine.IO integration
 
-#### 2. **component-emitter**
+#### 2. **scw-component-emitter**
 Event emitter pattern implementation with:
 - Synchronous and asynchronous event listeners
 - Type-safe event handling
 - Support for `on`, `once`, and `off` operations
 
-#### 3. **js-raw**
+#### 3. **scw-js-raw**
 Low-level JavaScript interop utilities:
 - JavaScript type wrappers
 - Global object access
 - Promise and Future integration
 - Type conversion helpers
-
-[//]: # (### Installation)
-
-[//]: # ()
-[//]: # (Add this to your `Cargo.toml`:)
-
-[//]: # ()
-[//]: # (```toml)
-
-[//]: # ([dependencies])
-
-[//]: # (socketio-client-wasm = "0.1.0")
-
-[//]: # (```)
 
 ### Quick Start
 
@@ -125,20 +111,6 @@ To build for WebAssembly:
 ```bash
 cargo build --target wasm32-unknown-unknown
 ```
-
-[//]: # (### Running Examples)
-
-[//]: # ()
-[//]: # (The `hello-world` example demonstrates basic Socket.IO usage:)
-
-[//]: # ()
-[//]: # (```bash)
-
-[//]: # (cd examples/hello-world)
-
-[//]: # (# Build and run with your preferred WASM tooling)
-
-[//]: # (```)
 
 ### Requirements
 
@@ -231,49 +203,35 @@ socketio-client-wasm/
 │   ├── lib.rs                    # 库入口点
 │   └── prelude.rs                # 便捷的重导出
 ├── crates/
-│   ├── socket-io/                # 核心 Socket.IO 实现
-│   ├── component-emitter/        # 事件发射器 trait 和实现
-│   ├── js-raw/                   # JavaScript 互操作工具
-│   └── impl-emitter-macro/       # 发射器的过程宏
+│   ├── scw-socket-io/                # 核心 Socket.IO 实现
+│   ├── scw-component-emitter/        # 事件发射器 trait 和实现
+│   ├── scw-js-raw/                   # JavaScript 互操作工具
+│   └── scw-impl-emitter-macro/       # 发射器的过程宏
 └── examples/
     └── hello-world/              # 基本使用示例
 ```
 
 ### 核心组件
 
-#### 1. **socket-io**
+#### 1. **scw-socket-io**
 核心 Socket.IO 客户端实现，提供：
 - Socket 连接管理
 - 事件发射和监听
 - 确认支持
 - Engine.IO 集成
 
-#### 2. **component-emitter**
+#### 2. **scw-component-emitter**
 事件发射器模式实现，包括：
 - 同步和异步事件监听器
 - 类型安全的事件处理
 - 支持 `on`、`once` 和 `off` 操作
 
-#### 3. **js-raw**
+#### 3. **scw-js-raw**
 底层 JavaScript 互操作工具：
 - JavaScript 类型包装器
 - 全局对象访问
 - Promise 和 Future 集成
 - 类型转换辅助函数
-
-[//]: # (### 安装)
-
-[//]: # ()
-[//]: # (在您的 `Cargo.toml` 中添加：)
-
-[//]: # ()
-[//]: # (```toml)
-
-[//]: # ([dependencies])
-
-[//]: # (socketio-client-wasm = "0.1.0")
-
-[//]: # (```)
 
 ### 快速开始
 
@@ -326,20 +284,6 @@ cargo build
 ```bash
 cargo build --target wasm32-unknown-unknown
 ```
-
-[//]: # (### 运行示例)
-
-[//]: # ()
-[//]: # (`hello-world` 示例演示了基本的 Socket.IO 使用：)
-
-[//]: # ()
-[//]: # (```bash)
-
-[//]: # (cd examples/hello-world)
-
-[//]: # (# 使用您首选的 WASM 工具构建和运行)
-
-[//]: # (```)
 
 ### 要求
 
@@ -401,9 +345,3 @@ let response = socket.emit_with_ack("event_name").await?;
 
 本项目遵循MIT许可证授权。
 详情请参阅[LICENSE](LICENSE)文件。
-
----
-
-**Note**: This project is in active development. APIs may change in future versions.
-
-**注意**：此项目正在积极开发中。API 可能在未来版本中发生变化。

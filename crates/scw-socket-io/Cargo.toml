@@ -1,0 +1,9 @@
+[package]
+name = "scw-socket-io"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+scw-js-raw = { workspace = true }
+scw-component-emitter = { workspace = true }
+scw-impl-emitter-macro = { workspace = true }

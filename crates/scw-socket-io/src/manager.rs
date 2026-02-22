@@ -1,6 +1,6 @@
 use crate::engine_io;
-use component_emitter::*;
-use js_raw::*;
+use scw_component_emitter::*;
+use scw_js_raw::*;
 use std::time::Duration;
 
 pub mod options;
@@ -27,7 +27,8 @@ impl Manager {
         engine_options: &engine_io::Options,
     ) -> Self {
         let options = JsObject::new();
-        JsObject::assign2(&options, &manager_options.to_js(), &engine_options.to_js());
+        JsObject::assign_many(&options, &[manager_options.to_js(), engine_options.to_js()])
+            .unwrap();
         let manager_class = JsReflect::get(&global_io(), &"Manager".into())
             .unwrap()
             .unchecked_into::<JsFunction>();
@@ -143,7 +144,7 @@ impl Manager {
     }
 }
 
-impl_emitter_macro::impl_reserved! {
+scw_impl_emitter_macro::impl_reserved! {
     Manager {
         open(),
         error(JsError),

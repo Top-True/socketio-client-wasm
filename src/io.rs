@@ -1,7 +1,7 @@
 pub mod builder;
 pub mod options;
 
-use js_raw::*;
+use scw_js_raw::*;
 
 pub fn protocol() -> i32 {
     JsReflect::get(&global_io(), &"protocol".into())
